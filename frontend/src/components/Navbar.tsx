@@ -1,154 +1,424 @@
-import React from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogIn, LogOut, User as UserIcon } from "lucide-react";
+import {
+  Car,
+  Menu,
+  X,
+  User,
+  LogOut,
+  ShieldCheck,
+  Globe,
+  DollarSign,
+  CheckCircle2,
+  Search,
+} from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useLang } from "@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 
-// import CurrencySelect from "./CurrencySelect";
-// import { useAuth } from "../lib/auth-context";
-
-import {useQuery} from "@apollo/client/react";
-import {gql} from "@apollo/client";
-
-const GRAPHQL_NAVBAR_QUERY =
-    gql`
-        query shared_HeaderPageElement {
-          sharedHeaderPageElement(locale: "en") {    
-            locale    
-            headerTagline
-            websiteTitle
-            documentId
-        
-        
-            localizations {
-              documentId
-              locale
-            }
-        
-            logo {
-              url
-            }
-        
-            
-        
-          }
-        }    
-    `
-
-
-function cx(...cls: Array<string | false | null | undefined>) {
-  return cls.filter(Boolean).join(" ");
+function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
 }
 
 export default function Navbar() {
-  const navigate = useNavigate();
-  // const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
+  const { lang, setLang, availableLanguages } = useLang();
+  const { currency, setCurrency } = useCurrency();
 
-  // const role = user?.role;
-  // const displayName = user?.email || "Guest";
+  const [open, setOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
 
-  const { loading, error, data } = useQuery (GRAPHQL_NAVBAR_QUERY)
+  const location = useLocation();
 
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>{error.message}</p>
+  const navItems = [
+    { label: "Home", path: "/" },
+    { label: "Fleet", path: "/cars" },
+    { label: "Explore", path: "/explore" },
+    { label: "Partners", path: "/partners" },
+    { label: "FAQ", path: "/faq" },
+    { label: "About", path: "/about" },
+    { label: "Support", path: "/support" },
+  ];
 
-  // console.log(data)
+  const handleLanguageChange = (newLang: string) => {
+    setLang(newLang as any);
+    setLanguageOpen(false);
+    
+    if (newLang === "fr") {
+      setCurrency("EUR");
+    } else if (newLang === "en") {
+      setCurrency("GBP");
+    }
+  };
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    setCurrency(newCurrency);
+    setCurrencyOpen(false);
+  };
+
+  const getLanguageLabel = (code: string) => {
+    const map: Record<string, string> = {
+      en: "English",
+      fr: "Français",
+    };
+    return map[code] || code;
+  };
+
+  const getCurrencyFlag = (cur: string) => {
+    const map: Record<string, string> = {
+      MUR: "🇲🇺",
+      EUR: "🇫🇷",
+      GBP: "🇬🇧",
+      USD: "🇺🇸",
+    };
+    return map[cur] || "💰";
+  };
+
+  const getLanguageFlag = (code: string) => {
+    const map: Record<string, string> = {
+      en: "🇬🇧",
+      fr: "🇫🇷",
+    };
+    return map[code] || "🌐";
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-black/60 backdrop-blur">
-      <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+    <header className="fixed top-0 left-0 right-0 z-[9999]">
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-xl border-b border-white/10" />
 
-        {/* BRAND */}
-        <Link to="/" className="flex items-center gap-3">
+      <div className="relative max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-          <motion.img
-            src={`http://69.62.124.53:1337${data.sharedHeaderPageElement.logo.url}`}
-            alt={`${data.sharedHeaderPageElement.websiteTitle} Logo`}
-            className="h-12 rounded-lg border border-white/20 shadow-lg"
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 4, repeat: Infinity }}
-            whileHover={{ scale: 1.05 }}
-          />
-
-          <div className="leading-tight">
-            <div className="text-white font-black text-sm">
-              { data.sharedHeaderPageElement.websiteTitle}
+        <Link
+          to="/"
+          className="flex items-center gap-3"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-blue-600 via-white to-red-500 p-[2px] shadow-2xl">
+            <div className="w-full h-full rounded-2xl bg-black flex items-center justify-center">
+              <Car className="text-white w-5 h-5" />
             </div>
-            <div className="text-white/70 text-[11px] -mt-0.5">
-              { data.sharedHeaderPageElement.headerTagline}
+          </div>
+
+          <div>
+            <div className="text-white font-black text-xl tracking-wide">
+              AM38
+            </div>
+
+            <div className="text-white/60 text-[10px] uppercase tracking-[0.3em]">
+              Mauritius
             </div>
           </div>
         </Link>
 
-        {/* NAV */}
-        <nav className="hidden md:flex items-center gap-2 rounded-full bg-white/10 border border-white/10 px-2 py-1">
-          {/* <NavItem to="/">Home</NavItem>
-          <NavItem to="/cars">Cars</NavItem>
-          <NavItem to="/explore">Explore</NavItem>
-          <NavItem to="/my-bookings">My Bookings</NavItem>
-          <NavItem to="/support">Support</NavItem> */}
+        <nav className="hidden lg:flex items-center gap-2">
+          {navItems.map((item) => {
+            const active = location.pathname === item.path;
 
-          {/* {(role === "admin" || role === "staff") && (
-            <NavItem to="/admin">Admin</NavItem>
-          )} */}
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-5 py-2 rounded-2xl text-sm font-bold transition-all duration-300 ${
+                  active
+                    ? "bg-white text-black shadow-xl"
+                    : "text-white hover:bg-white/10"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+          
+          {/* Language Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setLanguageOpen(!languageOpen);
+                setCurrencyOpen(false);
+              }}
+              className="px-4 py-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-sm flex items-center gap-1.5 shadow-lg hover:scale-105 transition"
+            >
+              <Globe className="w-4 h-4" />
+              {getLanguageFlag(lang)}
+              <span>{getLanguageLabel(lang)}</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            
+            {languageOpen && (
+              <div className="absolute top-full right-0 mt-1 bg-white rounded-2xl shadow-2xl overflow-hidden z-[999] min-w-[160px] border border-blue-100">
+                {availableLanguages.map((langOption) => (
+                  <button
+                    key={langOption.code}
+                    onClick={() => handleLanguageChange(langOption.code)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-blue-50 transition text-sm text-slate-700 font-medium flex items-center gap-2"
+                  >
+                    <span>{langOption.flag}</span>
+                    <span>{langOption.name}</span>
+                    {lang === langOption.code && (
+                      <CheckCircle2 className="w-4 h-4 text-blue-600 ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Currency Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setCurrencyOpen(!currencyOpen);
+                setLanguageOpen(false);
+              }}
+              className="px-4 py-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-sm flex items-center gap-1.5 shadow-lg hover:scale-105 transition"
+            >
+              <DollarSign className="w-4 h-4" />
+              {getCurrencyFlag(currency)}
+              <span>{currency}</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            
+            {currencyOpen && (
+              <div className="absolute top-full right-0 mt-1 bg-white rounded-2xl shadow-2xl overflow-hidden z-[999] min-w-[140px] border border-blue-100">
+                {["MUR", "EUR", "GBP", "USD"].map((cur) => (
+                  <button
+                    key={cur}
+                    onClick={() => handleCurrencyChange(cur)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-blue-50 transition text-sm text-slate-700 font-medium flex items-center gap-2"
+                  >
+                    <span>{getCurrencyFlag(cur)}</span>
+                    <span>{cur}</span>
+                    {currency === cur && (
+                      <CheckCircle2 className="w-4 h-4 text-blue-600 ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-2">
+        {/* RIGHT SIDE - SPOTLIGHT + AUTH - ALWAYS VISIBLE */}
+        <div className="flex items-center gap-3">
+          {/* SEARCH BUTTON - ALWAYS VISIBLE (NOT hidden) */}
+          <button
+            onClick={() => {
+              console.log("Search clicked!");
+              document.dispatchEvent(new CustomEvent("open-spotlight"));
+            }}
+            className="flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:scale-105 transition-all duration-300 shadow-lg"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5 text-white" />
+            <span className="text-sm font-medium text-white hidden sm:inline">Search</span>
+          </button>
+          
+          {/* Login/Register - Desktop only */}
+          <div className="hidden lg:flex items-center gap-3">
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  to="/login"
+                  className="px-5 py-2 rounded-2xl border border-white/20 text-white hover:bg-white/10 font-bold"
+                >
+                  Login
+                </Link>
 
-          {/* <CurrencySelect /> */}
- 
-          {/* {!user ? (
-            <>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/login")}
-                className="rounded-full bg-white/10 border border-white/10 px-4 py-2 text-white font-black"
-              >
-                <LogIn className="h-4 w-4 inline mr-2" />
-                Login
-              </motion.button>
+                <Link
+                  to="/register"
+                  className="px-6 py-2 rounded-2xl bg-gradient-to-r from-blue-600 to-red-500 text-white font-black shadow-xl"
+                >
+                  Register
+                </Link>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 border border-white/10">
+                  <User className="w-4 h-4 text-white" />
+                  <span className="text-white font-semibold text-sm">
+                    {user?.full_name || user?.email}
+                  </span>
+                  {user?.role === "admin" && (
+                    <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                  )}
+                </div>
 
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/register")}
-                className="rounded-full px-4 py-2 font-black text-black bg-white"
-              >
-                Register
-              </motion.button>
-            </>
-          ) : (
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => logout()}
-              className="rounded-full bg-white/10 border border-white/10 px-4 py-2 text-white font-black"
-            >
-              <LogOut className="h-4 w-4 inline mr-2" />
-              Logout
-            </motion.button>
-          )} */}
+                <button
+                  onClick={logout}
+                  className="px-5 py-2 rounded-2xl bg-red-500 text-white font-bold flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setOpen(!open)}
+            className="lg:hidden text-white"
+          >
+            {open ? <X /> : <Menu />}
+          </button>
         </div>
       </div>
-    </header>
-  );
-}
 
-function NavItem({ to, children }: { to: string; children: React.ReactNode }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        cx(
-          "rounded-full px-4 py-2 text-sm font-black transition",
-          isActive
-            ? "bg-white text-black"
-            : "text-white/85 hover:bg-white/10"
-        )
-      }
-    >
-      {children}
-    </NavLink>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:hidden bg-black/95 backdrop-blur-xl border-t border-white/10"
+        >
+          <div className="p-6 flex flex-col gap-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setOpen(false)}
+                className="text-white font-bold"
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            {/* Mobile Language Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setLanguageOpen(!languageOpen);
+                  setCurrencyOpen(false);
+                }}
+                className="w-full px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-sm flex items-center justify-between shadow-lg"
+              >
+                <span className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  {getLanguageFlag(lang)} {getLanguageLabel(lang)}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {languageOpen && (
+                <div className="mt-1 bg-white rounded-2xl shadow-2xl overflow-hidden z-[999] border border-blue-100">
+                  {availableLanguages.map((langOption) => (
+                    <button
+                      key={langOption.code}
+                      onClick={() => {
+                        handleLanguageChange(langOption.code);
+                        setOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-blue-50 transition text-sm text-slate-700 font-medium flex items-center gap-2"
+                    >
+                      <span>{langOption.flag}</span>
+                      <span>{langOption.name}</span>
+                      {lang === langOption.code && (
+                        <CheckCircle2 className="w-4 h-4 text-blue-600 ml-auto" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Currency Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setCurrencyOpen(!currencyOpen);
+                  setLanguageOpen(false);
+                }}
+                className="w-full px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-sm flex items-center justify-between shadow-lg"
+              >
+                <span className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  {getCurrencyFlag(currency)} {currency}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {currencyOpen && (
+                <div className="mt-1 bg-white rounded-2xl shadow-2xl overflow-hidden z-[999] border border-blue-100">
+                  {["MUR", "EUR", "GBP", "USD"].map((cur) => (
+                    <button
+                      key={cur}
+                      onClick={() => {
+                        handleCurrencyChange(cur);
+                        setOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-blue-50 transition text-sm text-slate-700 font-medium flex items-center gap-2"
+                    >
+                      <span>{getCurrencyFlag(cur)}</span>
+                      <span>{cur}</span>
+                      {currency === cur && (
+                        <CheckCircle2 className="w-4 h-4 text-blue-600 ml-auto" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Search Button */}
+            <button
+              onClick={() => {
+                setOpen(false);
+                document.dispatchEvent(new CustomEvent("open-spotlight"));
+              }}
+              className="w-full px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg"
+            >
+              <Search className="w-4 h-4" />
+              Search...
+            </button>
+
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="px-5 py-3 rounded-2xl border border-white/20 text-white hover:bg-white/10 font-bold text-center"
+                >
+                  Login
+                </Link>
+
+                <Link
+                  to="/register"
+                  onClick={() => setOpen(false)}
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-red-500 text-white font-black shadow-xl text-center"
+                >
+                  Register
+                </Link>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                }}
+                className="px-5 py-3 rounded-2xl bg-red-500 text-white font-bold flex items-center justify-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </header>
   );
 }
